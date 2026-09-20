@@ -250,7 +250,7 @@ function formatScore(score: number) {
 function phaseText(phase: MatchPhase, winner: Winner) {
   if (phase === "ready") return "Ready when you are";
   if (phase === "paused") return "Match paused";
-  if (phase === "error") return "Gateway decision failed";
+  if (phase === "error") return "Jev provider decision failed";
   if (phase === "finished") {
     if (winner === "you") return "You win";
     if (winner === "jev") return "Jev wins";
@@ -1020,7 +1020,7 @@ export function TetrisGame() {
               {evaluation.error ? (
                 <div className="mt-3 border border-border-strong p-2 text-caption" role="alert">
                   <p>{evaluation.error}</p>
-                  {evaluation.actionUrl ? <a className="mt-1 inline-block underline" href={evaluation.actionUrl} target="_blank" rel="noreferrer">Open Gateway credits</a> : null}
+                  {evaluation.actionUrl ? <a className="mt-1 inline-block underline" href={evaluation.actionUrl} target="_blank" rel="noreferrer">Open provider credits</a> : null}
                 </div>
               ) : null}
             </section>
