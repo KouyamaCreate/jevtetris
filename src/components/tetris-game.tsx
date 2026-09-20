@@ -87,6 +87,7 @@ type BattleEvent = {
 
 type EvaluationInfo = {
   status: JevStatus;
+  provider: string | null;
   probability: number | null;
   elapsedMs: number | null;
   inputTokens: number | null;
@@ -107,6 +108,7 @@ type MatchState = {
 };
 
 type MoveApiResponse = {
+  provider?: string;
   move?: {
     id?: string;
     x?: number;
@@ -159,7 +161,7 @@ function createReadyMatch(): MatchState {
     player: idleArena(),
     jev: idleArena(),
     jevTarget: null,
-    evaluation: { status: "idle", probability: null, elapsedMs: null, inputTokens: null, posture: null, risk: null, error: null },
+    evaluation: { status: "idle", provider: null, probability: null, elapsedMs: null, inputTokens: null, posture: null, risk: null, error: null },
     winner: null,
     battleEvent: null,
   };
@@ -171,7 +173,7 @@ function createMatch(): MatchState {
     phase: "playing",
     player: createArenaState(),
     jev: createArenaState(),
-    evaluation: { status: "thinking", probability: null, elapsedMs: null, inputTokens: null, posture: null, risk: null, error: null },
+    evaluation: { status: "thinking", provider: null, probability: null, elapsedMs: null, inputTokens: null, posture: null, risk: null, error: null },
     battleEvent: null,
   };
 }
@@ -497,6 +499,7 @@ export function TetrisGame() {
           probability,
           elapsedMs: typeof payload.elapsedMs === "number" ? payload.elapsedMs : Math.round(performance.now() - requestedAt),
           inputTokens: typeof payload.usage?.inputTokens === "number" ? payload.usage.inputTokens : null,
+          provider: typeof payload.provider === "string" ? payload.provider : current.evaluation.provider,
           posture: typeof payload.posture === "string" ? payload.posture : null,
           risk: typeof payload.risk === "string" ? payload.risk : null,
         },
@@ -992,14 +995,17 @@ export function TetrisGame() {
               </div>
             </section>
 
-            <section className="tetris-panel p-3 sm:p-4" aria-label="Jev Gateway telemetry">
+            <section className="tetris-panel p-3 sm:p-4" aria-label="Jev provider telemetry">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <h2 className="text-h3">Gateway telemetry</h2>
+                <h2 className="text-h3">Jev provider telemetry</h2>
                 <span className={`status-indicator status-indicator--${evaluation.status}`}>
                   <i /> {evaluation.status.toUpperCase()}
                 </span>
               </div>
               <p className="text-body2">{evaluationText(evaluation.status)}</p>
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.08em] text-muted-foreground">
+                provider {evaluation.provider ?? "auto / waiting"}
+              </p>
               {evaluation.posture || evaluation.risk ? (
                 <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.08em] text-muted-foreground">
                   posture {evaluation.posture ?? "—"} · risk {evaluation.risk ?? "—"}
@@ -1010,7 +1016,7 @@ export function TetrisGame() {
                 <Metric label="LATENCY" value={evaluation.elapsedMs === null ? "—" : `${evaluation.elapsedMs} ms`} />
                 <Metric label="INPUT TOKENS" value={evaluation.inputTokens === null ? "—" : String(evaluation.inputTokens)} />
               </div>
-              <p className="mt-2 text-caption text-muted-foreground">通常は1 Gateway evaluation。盤面が変われば再評価し、応答中も重力は進みます。</p>
+              <p className="mt-2 text-caption text-muted-foreground">通常は1 provider evaluation。盤面が変われば再評価し、応答中も重力は進みます。</p>
               {evaluation.error ? (
                 <div className="mt-3 border border-border-strong p-2 text-caption" role="alert">
                   <p>{evaluation.error}</p>

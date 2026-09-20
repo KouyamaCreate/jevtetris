@@ -49,14 +49,26 @@ export type JevProviderStatus = {
 const DEFAULT_TYPESAFE_BASE_URL = "https://api.typesafe.ai/v1";
 const DEFAULT_OPENROUTER_MODEL = "typesafe/jev-1.13";
 const DEFAULT_CLOUDFLARE_MODEL = "typesafe/jev";
+const VALID_PROVIDER_SELECTIONS = new Set(["auto", "typesafe", "vercel", "openrouter", "cloudflare"]);
 
 /**
  * The provider is resolved on the server for every request. Keys never leave
  * this module and are intentionally not included in status responses.
  */
 export function getJevProviderStatus(): JevProviderStatus {
-  const selection = readSelection();
+  const rawSelection = process.env.JEV_PROVIDER?.trim().toLowerCase();
   const available = getAvailableProviders();
+  if (rawSelection && !VALID_PROVIDER_SELECTIONS.has(rawSelection)) {
+    return {
+      selection: "auto",
+      provider: null,
+      configured: false,
+      available,
+      missing: [],
+      error: "JEV_PROVIDERはauto、typesafe、vercel、openrouter、cloudflareのいずれかを指定してください。",
+    };
+  }
+  const selection = readSelection();
 
   if (selection !== "auto") {
     const missing = missingRequirements(selection);
